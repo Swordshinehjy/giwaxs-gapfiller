@@ -649,51 +649,6 @@ class MaskCanvas(FigureCanvas):
                 in_polygon = polygon_path.contains_points(points)
                 mask |= in_polygon.reshape(height, width).astype(np.uint8)
 
-        # for smudge_data in self.smudge_lines:
-        #     line = smudge_data['line']
-        #     radius = smudge_data['radius']
-
-        #     # Get line data in display coordinates
-        #     x_data, y_data = line.get_xdata(), line.get_ydata()
-        #     # Convert radius from points to data coordinates
-        #     fig = self.axes.figure
-        #     display_radius = radius
-        #     data_radius = display_radius * width / self.axes.bbox.width
-
-        #     # Process each segment
-        #     for i in range(len(x_data) - 1):
-        #         if not (np.isfinite(x_data[i]) and np.isfinite(y_data[i])):
-        #             continue
-        #         # Create line segment
-        #         start = np.array([x_data[i], y_data[i]])
-        #         end = np.array([x_data[i + 1], y_data[i + 1]])
-
-        #         # Vector from start to end
-        #         vec = end - start
-        #         length = np.linalg.norm(vec)
-        #         if length == 0:
-        #             # Single point case
-        #             distances = np.sqrt((X - start[0])**2 + (Y - start[1])**2)
-        #             mask[distances <= data_radius] = 1
-        #         else:
-        #             # Normalized direction vector
-        #             direction = vec / length
-        #             # Vector from each point to start
-        #             vec_to_start = np.dstack([X - start[0], Y - start[1]])
-        #             # Projection lengths
-        #             projections = np.sum(vec_to_start * direction, axis=2)
-
-        #             # Clamp projections to segment length
-        #             clamped = np.clip(projections, 0, length)
-
-        #             # Find closest points on segment
-        #             closest_x = start[0] + clamped * direction[0]
-        #             closest_y = start[1] + clamped * direction[1]
-        #             # Calculate distances to segment
-        #             distances = np.sqrt((X - closest_x)**2 +
-        #                                 (Y - closest_y)**2)
-        #             # Update mask
-        #             mask[distances <= data_radius] = 1
         pil_mask = Image.fromarray(mask)
         draw = ImageDraw.Draw(pil_mask)
 
@@ -707,7 +662,6 @@ class MaskCanvas(FigureCanvas):
             data_radius = display_radius * width / self.axes.bbox.width
 
             thickness = max(1, int(round(data_radius * 2)))
-            # 用于绘制圆形的半径
             int_radius = max(1, int(round(data_radius)))
 
             points_xy = [(x, y) for x, y in zip(x_data, y_data)
@@ -716,14 +670,14 @@ class MaskCanvas(FigureCanvas):
             if not points_xy:
                 continue
 
-            # 步骤 1: 绘制连接线段
+            # step 1: draw connecting line segments
             if len(points_xy) > 1:
                 draw.line(points_xy, fill=1, width=thickness)
 
-            # 步骤 2: 在每个顶点绘制实心圆，以确保无缝连接和圆滑端点
+            # step 2: draw filled circles at each vertex
             for point in points_xy:
                 x, y = point
-                # 定义圆的边界框 [x0, y0, x1, y1]
+                # defined by the center and radius
                 bbox = [
                     x - int_radius, y - int_radius, x + int_radius,
                     y + int_radius

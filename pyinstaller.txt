@@ -1,0 +1,16 @@
+# requirements.txt
+pip install pipreqs
+pipreqs . --encoding=utf8 --force
+
+# 新版本python 安装C++ build tools https://visualstudio.microsoft.com/zh-hans/visual-cpp-build-tools/
+
+Ubuntu 22.04
+sudo apt-get update
+sudo apt-get install libxcb-cursor0
+
+
+lupdate gap.py mask.py compare.py -ts ./localization/zh_CN.ts 
+linguist ./localization/zh_CN.ts
+lrelease ./localization/zh_CN.ts ./localization/zh_CN.qm 
+pyside6-rcc resources.qrc -o resources_rc.py
+pyinstaller gap.spec
