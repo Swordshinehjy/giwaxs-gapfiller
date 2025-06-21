@@ -603,9 +603,7 @@ class MaskCanvas(FigureCanvas):
                 pixel_value = self.im[int(y_data), int(x_data)]
             else:
                 pixel_value = np.nan 
-            self.mouse_data_coords_changed.emit(x_data, y_data, float(pixel_value))
-        else:
-            self.mouse_data_coords_changed.emit(np.nan, np.nan, np.nan)     
+            self.mouse_data_coords_changed.emit(x_data, y_data, float(pixel_value))   
 
     def get_mask(self):
         if self.im is None:

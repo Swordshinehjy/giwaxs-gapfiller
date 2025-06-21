@@ -450,6 +450,8 @@ class MainWindow(QMainWindow):
         self.set_default_params()
         self.setup_menu_bar()
         self.retranslateUi()
+        if self.mask_data is None:
+            self.mask_data = utils.generate_detector_mask(self.detector.currentText())
 
     def setup_menu_bar(self):
         """
@@ -783,6 +785,7 @@ class MainWindow(QMainWindow):
                 self.y2.setText(str(self.params["y2"]))
             except (json.JSONDecodeError, IOError, OSError) as e:
                 self.status_bar.showMessage(f"Error: {str(e)}")
+        
 
     def toggle_mask_toolbar(self, checked):
         if not checked:
