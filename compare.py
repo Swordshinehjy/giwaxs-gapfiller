@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog,
                                QSizePolicy, QSlider, QSpinBox, QToolBar,
                                QToolButton, QVBoxLayout, QWidget)
 
-from custum import CompareCanvas, MaskCanvas
+from custum import CompareCanvas
 
 
 class CompareDialog(QDialog):

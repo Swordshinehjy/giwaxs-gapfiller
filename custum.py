@@ -16,7 +16,38 @@ from PySide6.QtWidgets import (QHBoxLayout, QLabel, QSizePolicy, QSlider,
                                QToolBar, QVBoxLayout, QWidget)
 
 
-class MyCanvas(FigureCanvas):
+class ScrollableMixin:
+
+    def _setup_scroll(self):
+        # This method assumes the class using the mixin has 'self.axes' and 'self.mpl_connect'
+        self.mpl_connect('scroll_event', self.on_scroll)
+
+    def on_scroll(self, event):
+        if event.inaxes != self.axes:
+            return
+
+        x_min, x_max = self.axes.get_xlim()
+        y_min, y_max = self.axes.get_ylim()
+        x_data, y_data = event.xdata, event.ydata
+
+        if event.button == 'up':
+            scale_factor = 0.8
+        elif event.button == 'down':
+            scale_factor = 1.25
+        else:
+            return
+
+        new_x_min = x_data - (x_data - x_min) * scale_factor
+        new_x_max = x_data + (x_max - x_data) * scale_factor
+        new_y_min = y_data - (y_data - y_min) * scale_factor
+        new_y_max = y_data + (y_max - y_data) * scale_factor
+
+        self.axes.set_xlim(new_x_min, new_x_max)
+        self.axes.set_ylim(new_y_min, new_y_max)
+        self.draw()
+
+
+class MyCanvas(FigureCanvas, ScrollableMixin):
 
     def __init__(self, parent=None, width=3, height=4, dpi=150):
         self.fig = plt.figure(figsize=(width, height),
@@ -29,8 +60,38 @@ class MyCanvas(FigureCanvas):
         FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding,
                                    QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
-
+        self._setup_scroll()
+        self.pan_start_x = None
+        self.pan_start_y = None
+        self.ispanning = False
         self.im = None
+        self.mpl_connect('button_press_event', self.on_mouse_press)
+        self.mpl_connect('button_release_event', self.on_mouse_release)
+        self.mpl_connect('motion_notify_event', self.on_mouse_motion)
+
+    def on_mouse_press(self, event):
+        if event.button == 1 and event.inaxes == self.axes:
+            self.ispanning = True
+            self.pan_start_x = event.xdata
+            self.pan_start_y = event.ydata
+
+    def on_mouse_release(self, event):
+        if event.button == 1:
+            self.ispanning = False
+            self.pan_start_x = None
+            self.pan_start_y = None
+
+    def on_mouse_motion(self, event):
+        if self.ispanning and event.inaxes == self.axes:
+            if event.xdata is None or event.ydata is None:
+                return
+            dx = event.xdata - self.pan_start_x
+            dy = event.ydata - self.pan_start_y
+            x_min, x_max = self.axes.get_xlim()
+            y_min, y_max = self.axes.get_ylim()
+            self.axes.set_xlim(x_min - dx, x_max - dx)
+            self.axes.set_ylim(y_min - dy, y_max - dy)
+            self.draw()
 
     def set_vlim(self, vmin=None, vmax=None):
         if self.im:
@@ -87,9 +148,10 @@ class MyGraph(QWidget):
 
     def update_vmax(self, value):
         self.canvas.set_vlim(vmax=value)
+        self.slider.setValue(value)
 
 
-class CompareCanvas(FigureCanvas):
+class CompareCanvas(FigureCanvas, ScrollableMixin):
 
     def __init__(self, parent=None, width=3, height=4, dpi=150):
         self.fig = plt.figure(figsize=(width, height),
@@ -102,9 +164,8 @@ class CompareCanvas(FigureCanvas):
         FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding,
                                    QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
-
+        self._setup_scroll()
         self.mode = 'pan'
-        self.mpl_connect('scroll_event', self.on_scroll)
 
         self.pan_start_x = None
         self.pan_start_y = None
@@ -211,29 +272,10 @@ class CompareCanvas(FigureCanvas):
             new_vmax = vmax if vmax is not None else current_vmax
             im.set_clim(vmin=new_vmin, vmax=new_vmax)
 
-    def on_scroll(self, event):
-        if event.inaxes != self.axes:
-            return
-        x_min, x_max = self.axes.get_xlim()
-        y_min, y_max = self.axes.get_ylim()
-        x_data, y_data = event.xdata, event.ydata
-        if event.button == 'up':
-            scale_factor = 0.8
-        elif event.button == 'down':
-            scale_factor = 1.25
-        else:
-            return
-        new_x_min = x_data - (x_data - x_min) * scale_factor
-        new_x_max = x_data + (x_max - x_data) * scale_factor
-        new_y_min = y_data - (y_data - y_min) * scale_factor
-        new_y_max = y_data + (y_max - y_data) * scale_factor
-        self.axes.set_xlim(new_x_min, new_x_max)
-        self.axes.set_ylim(new_y_min, new_y_max)
-        self.draw()
 
-
-class MaskCanvas(FigureCanvas):
+class MaskCanvas(FigureCanvas, ScrollableMixin):
     mouse_data_coords_changed = Signal(int, int, float)
+
     def __init__(self, parent=None, width=4, height=4, dpi=150):
         self.fig = plt.figure(figsize=(width, height),
                               dpi=dpi,
@@ -250,11 +292,9 @@ class MaskCanvas(FigureCanvas):
         self.im = None
         self.mask_above_value = None
         self.mask_below_value = None
-
+        self._setup_scroll()
         # Default mode
         self.mode = 'pan'
-        # Scroll wheel for zooming
-        self.mpl_connect('scroll_event', self.on_scroll)
         # Panning attributes
         self.pan_start_x = None
         self.pan_start_y = None
@@ -314,31 +354,6 @@ class MaskCanvas(FigureCanvas):
         """Sets the radius for the smudge tool."""
         self.smudge_radius = radius
         # print(f"Smudge radius set to: {self.smudge_radius}")
-
-    def on_scroll(self, event):
-        if event.inaxes != self.axes:
-            return
-
-        x_min, x_max = self.axes.get_xlim()
-        y_min, y_max = self.axes.get_ylim()
-
-        x_data, y_data = event.xdata, event.ydata
-
-        if event.button == 'up':
-            scale_factor = 0.8
-        elif event.button == 'down':
-            scale_factor = 1.25
-        else:
-            return
-
-        new_x_min = x_data - (x_data - x_min) * scale_factor
-        new_x_max = x_data + (x_max - x_data) * scale_factor
-        new_y_min = y_data - (y_data - y_min) * scale_factor
-        new_y_max = y_data + (y_max - y_data) * scale_factor
-
-        self.axes.set_xlim(new_x_min, new_x_max)
-        self.axes.set_ylim(new_y_min, new_y_max)
-        self.draw()
 
     def on_button_press(self, event):
         self.setFocus()
@@ -592,6 +607,7 @@ class MaskCanvas(FigureCanvas):
             self.shift_is_pressed = False
             if self.drawing_active and self.mode == 'draw_circle' and self.current_shape:
                 pass
+
     def _on_mouse_move(self, event):
         if self.im is None:
             return
@@ -602,8 +618,9 @@ class MaskCanvas(FigureCanvas):
                0 <= int(x_data) < self.im.shape[1]:
                 pixel_value = self.im[int(y_data), int(x_data)]
             else:
-                pixel_value = np.nan 
-            self.mouse_data_coords_changed.emit(x_data, y_data, float(pixel_value))   
+                pixel_value = np.nan
+            self.mouse_data_coords_changed.emit(x_data, y_data,
+                                                float(pixel_value))
 
     def get_mask(self):
         if self.im is None:
