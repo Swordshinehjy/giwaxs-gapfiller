@@ -1,0 +1,32 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <!-- 样式表文件 -->
+    <qresource prefix="/">
+        <file>qss/dark.qss</file>
+        <file>qss/light.qss</file>
+        <file>qss/default.qss</file>
+    </qresource>
+
+    <!-- 图标文件 -->
+    <qresource prefix="/">
+        <file>icon/mask.png</file>
+        <file>icon/scatter.png</file>
+        <file>icon/ellipse.png</file>
+        <file>icon/painter.png</file>
+        <file>icon/pan.png</file>
+        <file>icon/polygon.png</file>
+        <file>icon/rectangle.png</file>
+        <file>icon/uparrow.png</file>
+        <file>icon/send0.png</file>
+        <file>icon/send1.png</file>
+        <file>icon/send2.png</file>
+        <file>icon/sendall.png</file>
+        <file>icon/compare.png</file>
+        <file>icon/ruler.png</file>
+    </qresource>
+
+    <!-- 翻译文件 -->
+    <qresource prefix="/">
+        <file>localization/zh_CN.qm</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,12 @@
+{
+    "use_pixel": false,
+    "x1": 3.0,
+    "y1": -4.0,
+    "x2": 6.0,
+    "y2": -8.0,
+    "detector": "Pilatus2M",
+    "folder": "D:\\code\\giwaxs-examples\\gapfill",
+    "cmap": "jet",
+    "vmax": 6000.0,
+    "theme": "light"
+}
