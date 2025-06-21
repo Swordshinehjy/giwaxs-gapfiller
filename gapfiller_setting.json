@@ -5,7 +5,8 @@
     "x2": 6.0,
     "y2": -8.0,
     "detector": "Pilatus2M",
-    "folder": "D:\\code\\giwaxs-examples\\gapfill",
+    "folder": "",
+    "flatfield": "",
     "cmap": "jet",
     "vmax": 6000.0,
     "theme": "light"
