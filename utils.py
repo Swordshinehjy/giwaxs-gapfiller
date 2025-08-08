@@ -1,11 +1,6 @@
 import fabio
 import numpy as np
-import psutil
-import scipy.constants as sc
-from joblib import Parallel, delayed
 from scipy.ndimage import map_coordinates
-from scipy.optimize import minimize
-from scipy.signal import medfilt2d
 
 DETECTOR_GAP = {
     "Eiger1M": [1065, 1030, [514, 550], []],
@@ -68,11 +63,11 @@ def load_data(file_path):
     return fabio.open(file_path).data
 
 
-def fill_gap(ff, mask, data0, data1, data2, x1, y1, x2, y2):
-    data = data0 * ff
+def fill_gap(flatfield, mask, data0, data1, data2, x1, y1, x2, y2):
+    data = data0 * flatfield
     gapmask = mask > 0
     data[gapmask] = 0
-    first_fill = data1*ff
+    first_fill = data1 * flatfield
     first_fill[gapmask] = 0
     yy, xx = np.where(gapmask)
     py = yy + y1
@@ -86,5 +81,7 @@ def fill_gap(ff, mask, data0, data1, data2, x1, y1, x2, y2):
         yy2, xx2 = np.where(mask2)
         py2 = yy2 + y2
         px2 = xx2 + x2
-        data[mask2] = map_coordinates(data2*ff, np.asarray([py2, px2]), order=1)
+        data[mask2] = map_coordinates(data2 * flatfield,
+                                      np.asarray([py2, px2]),
+                                      order=1)
     return data

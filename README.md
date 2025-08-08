@@ -1,37 +1,31 @@
 # GIWAXS-GapFiller
 
-本软件为 GIWAXS-Tools衍生的用于实时查看并拼合检测器间隙的软件。
+This software, a derivative of GIWAXS-Tools, is designed for real-time viewing and stitching of detector gaps.
 
-## 引用
+## Citation
 
-使用本软件请引用：
+If you use this software, please cite the following:
 
-> Jianyao Huang, GIWAXS-Tools,  https://gitee.com/swordshinehjy/giwaxs-script .
+> Jianyao Huang, GIWAXS-Tools,  https://gitee.com   /swordshinehjy/giwaxs-script.
+> 
+> Polym. Chem. 2021, 12 (16), 2471-2480 (doi: 10.1039/d1py00105a).
 
-请在您的出版物中引用此软件，这将有助于我们更好地改进和维护它。
+
+Citing this software in your publications will help me improve and maintain it.
 
 
-## 免责声明
+## Disclaimer
 
-作者尽可能保证代码的准确性，但 **不能保证没有内部错误**。
+The author has made every effort to ensure the accuracy of the code but **cannot guarantee that it is free of internal errors.**
 
-**重要提示：**
+**Important notes:**
 
-*   如果您在使用过程中发现任何 bug，请及时汇报，以便我们进行修复。
-*   主要源代码请参照上述网址 [https://gitee.com/swordshinehjy/giwaxs-script](https://gitee.com/swordshinehjy/giwaxs-script)。
-*   **作者不对软件给出的结果所导致的任何后果负责。使用本软件所产生的一切风险由用户自行承担。**
+*   If you find any bugs while using the software, please report them promptly so we can fix them.
+*   The main source code is available at the URL above: [https://gitee.com/swordshinehjy/giwaxs-script](https://gitee.com/swordshinehjy/giwaxs-script)。
+*   **The author is not responsible for any consequences resulting from the output of this software. All risks associated with using this software are assumed by the user.。**
 
-请仔细阅读免责声明，并在充分理解的基础上使用本软件。
-
-## 更新地址（不定期）
-
-您可以通过以下链接获取软件的最新版本和更新：
-
-*   **百度网盘:**  [https://pan.baidu.com/s/12AjY4tcJhkzElMjDkPQ-GA?pwd=3333](https://pan.baidu.com/s/12AjY4tcJhkzElMjDkPQ-GA?pwd=3333)  密码: `3333`
-*   **阿里云盘:** [https://www.aliyundrive.com/s/Gw2CmNNK6vw](https://www.aliyundrive.com/s/Gw2CmNNK6vw)
-
-建议您不定期访问这些链接，以获取软件的最新版本和功能。
+Please read this disclaimer carefully and use the software only after you fully understand it.
 
 ---
 
-感谢您使用 GIWAXS-Tools 软件！ 如有任何问题或建议，欢迎联系作者。
+Thank you for using the GIWAXS-Tools software series! If you have any questions or suggestions, please feel free to contact the author.

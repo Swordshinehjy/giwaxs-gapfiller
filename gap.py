@@ -9,33 +9,28 @@ from pathlib import Path
 
 import fabio
 import h5py
-import matplotlib.pyplot as plt
-import matplotlib.ticker as mticker
 import numpy as np
-import scipy.constants as sc
 from fabio import (GEimage, HiPiCimage, OXDimage, adscimage, binaryimage,
                    bruker100image, brukerimage, cbfimage, dm3image, dtrekimage,
                    edfimage, eigerimage, esperantoimage, fabioimage,
                    fit2dimage, fit2dmaskimage, fit2dspreadsheetimage,
-                   hdf5image, jpeg2kimage, jpegimage, kcdimage, limaimage,
-                   mar345image, marccdimage, mpaimage, mrcimage, numpyimage,
-                   openimage, pilatusimage, pixiimage, pnmimage, raxisimage,
-                   sparseimage, speimage, templateimage, tifimage, xsdimage)
+                   hdf5image, jpeg2kimage, jpegimage, kcdimage, lambdaimage,
+                   limaimage, mar345image, marccdimage, mpaimage, mrcimage,
+                   numpyimage, openimage, pilatusimage, pixiimage, pnmimage,
+                   raxisimage, sparseimage, speimage, templateimage, tifimage,
+                   xcaliburimage, xsdimage)
 from PIL import Image
 from PySide6.QtCore import (QCoreApplication, QDir, QFile, QModelIndex, Qt,
                             QTextStream, QTranslator)
 from PySide6.QtGui import (QAction, QActionGroup, QDoubleValidator, QIcon,
-                           QImage, QKeySequence, QPixmap, QShortcut)
-from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox,
-                               QComboBox, QDialog, QDialogButtonBox,
-                               QDoubleSpinBox, QFileDialog, QFileSystemModel,
-                               QGridLayout, QGroupBox, QHBoxLayout, QLabel,
-                               QLineEdit, QListView, QMainWindow, QMenuBar,
-                               QMessageBox, QPushButton, QRadioButton,
-                               QSizePolicy, QSlider, QSpinBox, QSplitter,
-                               QStatusBar, QToolBar, QToolButton, QTreeView,
-                               QVBoxLayout, QWidget)
-from scipy import integrate
+                           QKeySequence, QPixmap, QShortcut)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox,
+                               QDialog, QDoubleSpinBox, QFileDialog,
+                               QFileSystemModel, QGridLayout, QGroupBox,
+                               QHBoxLayout, QLabel, QLineEdit, QListView,
+                               QMainWindow, QMessageBox, QPushButton,
+                               QRadioButton, QSizePolicy, QSplitter,
+                               QStatusBar, QToolBar, QVBoxLayout, QWidget)
 
 import resources_rc
 import utils
@@ -133,11 +128,11 @@ class MainWindow(QMainWindow):
         self.open_flatfield.clicked.connect(self.browse_ff)
         self.gridLayout_image.addWidget(self.open_flatfield, 1, 0, 1, 1)
 
-        self.ff_line = QLineEdit(self.imageparams)
+        self.flatfield_line = QLineEdit(self.imageparams)
         sizePolicy1.setHeightForWidth(
-            self.ff_line.sizePolicy().hasHeightForWidth())
-        self.ff_line.setSizePolicy(sizePolicy1)
-        self.gridLayout_image.addWidget(self.ff_line, 1, 1, 1, 3)
+            self.flatfield_line.sizePolicy().hasHeightForWidth())
+        self.flatfield_line.setSizePolicy(sizePolicy1)
+        self.gridLayout_image.addWidget(self.flatfield_line, 1, 1, 1, 3)
 
         self.colormap = QLabel(self.imageparams)
         self.colormap.setAlignment(Qt.AlignCenter)
@@ -451,7 +446,8 @@ class MainWindow(QMainWindow):
         self.setup_menu_bar()
         self.retranslateUi()
         if self.mask_data is None:
-            self.mask_data = utils.generate_detector_mask(self.detector.currentText())
+            self.mask_data = utils.generate_detector_mask(
+                self.detector.currentText())
 
     def setup_menu_bar(self):
         """
@@ -640,9 +636,6 @@ class MainWindow(QMainWindow):
         """
         Opens a PDF help file using the default system PDF viewer.
         """
-        # Define the path to your PDF help file
-        # IMPORTANT: Replace 'path/to/your/help_file.pdf' with the actual path
-        # You might want to place it in a 'docs' or 'help' folder within your project
         pdf_path = Path.cwd() / "GIWAXS-Gapfiller使用说明.pdf"
 
         if not pdf_path.exists():
@@ -666,7 +659,6 @@ class MainWindow(QMainWindow):
         """
         Displays an "About" dialog with software information.
         """
-        # You can customize these details
         app_name = "GIWAXS GapFiller"
         version = "1.0.0"
         author = "Jianyao Huang"
@@ -773,8 +765,8 @@ class MainWindow(QMainWindow):
                 self.colormap_box.setCurrentText(self.params["cmap"])
                 self.intbox.setValue(self.params["vmax"])
                 self.update_display(Path(self.params["folder"]))
-                self.ff_line.setText(self.params["flatfield"])
-                self.ff_line.setCursorPosition(0)
+                self.flatfield_line.setText(self.params["flatfield"])
+                self.flatfield_line.setCursorPosition(0)
                 self.detector.setCurrentText(self.params["detector"])
                 if self.mask_data is None:
                     self.mask_data = self.generate_detector_mask()
@@ -785,7 +777,6 @@ class MainWindow(QMainWindow):
                 self.y2.setText(str(self.params["y2"]))
             except (json.JSONDecodeError, IOError, OSError) as e:
                 self.status_bar.showMessage(f"Error: {str(e)}")
-        
 
     def toggle_mask_toolbar(self, checked):
         if not checked:
@@ -871,9 +862,9 @@ class MainWindow(QMainWindow):
         if ffFile:
             try:
                 fabio.open(ffFile)
-                self.ff_line.clear()
-                self.ff_line.setText(ffFile)
-                self.ff_line.setCursorPosition(0)
+                self.flatfield_line.clear()
+                self.flatfield_line.setText(ffFile)
+                self.flatfield_line.setCursorPosition(0)
             except Exception as e:
                 self.status_bar.showMessage(str(e))
 
@@ -1124,7 +1115,8 @@ class MainWindow(QMainWindow):
 
     def compare_images(self):
         try:
-            compare = CompareDialog(self, data0=self.data_original,
+            compare = CompareDialog(self,
+                                    data0=self.data_original,
                                     data1=self.data_first_move,
                                     data2=self.data_second_move,
                                     cmap=self.colormap_box.currentText(),
@@ -1146,8 +1138,8 @@ class MainWindow(QMainWindow):
                 self.status_bar.showMessage(
                     QCoreApplication.translate("MainWindow", "Missing data"))
                 return
-            if self.ff_line.text():
-                ff = fabio.open(self.ff_line.text()).data
+            if self.flatfield_line.text():
+                ff = fabio.open(self.flatfield_line.text()).data
             else:
                 ff = np.ones_like(data0)
             x1, y1, x2, y2 = map(float, (self.x1.text(), self.y1.text(),
@@ -1184,8 +1176,8 @@ class MainWindow(QMainWindow):
                 self.intbox.setValue(self.params["vmax"])
                 self.folder_line.setText(self.params["folder"])
                 self.folder_line.setCursorPosition(0)
-                self.ff_line.setText(self.params["flatfield"])
-                self.ff_line.setCursorPosition(0)
+                self.flatfield_line.setText(self.params["flatfield"])
+                self.flatfield_line.setCursorPosition(0)
                 self.colormap_box.setCurrentText(self.params["cmap"])
                 self.detector.setCurrentText(self.params["detector"])
                 if not self.detector_mask.isChecked():
@@ -1203,7 +1195,7 @@ class MainWindow(QMainWindow):
     def save_settings(self):
         try:
             self.params["folder"] = self.folder_line.text()
-            self.params["flatfield"] = self.ff_line.text()
+            self.params["flatfield"] = self.flatfield_line.text()
             self.params["cmap"] = self.colormap_box.currentText()
             self.params["vmax"] = self.intbox.value()
             self.params["detector"] = self.detector.currentText()
